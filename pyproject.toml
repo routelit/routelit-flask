@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "routelit-flask"
+version = "0.1.0"
+description = "Flask adapter for RouteLit"
+readme = "README.md"
+authors = [
+    {name = "RouteLit Team"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "flask>=2.0.0",
+    "routelit>=0.1.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+routelit_flask = ["static/*"]
+
+[tool.uv.sources]
+routelit = { path = "../routelit", editable = true }
+
+[project.urls]
+"Homepage" = "https://github.com/rolangom/routelit"
+"Bug Tracker" = "https://github.com/rolangom/routelit/issues" 
