@@ -90,19 +90,16 @@ class RouteLitFlaskAdapter:
         self, view_fn: ViewFn, request: FlaskRLRequest, **kwargs
     ) -> Response:
         elements = self.routelit.handle_get_request(view_fn, request, **kwargs)
-        if request.is_json():
-            response = jsonify(elements)
-        else:
-            response = make_response(
-                render_template(
-                    "index.html",
-                    ROUTELIT_DATA=json.dumps(elements),
-                    DEBUG=self.debug,
-                    LOCAL_FRONTEND_SERVER=self.local_frontend_server,
-                    default_vite_assets=self.routelit.default_client_assets(),
-                    vite_assets=self.routelit.client_assets(),
-                )
+        response = make_response(
+            render_template(
+                "index.html",
+                ROUTELIT_DATA=json.dumps(elements),
+                DEBUG=self.debug,
+                LOCAL_FRONTEND_SERVER=self.local_frontend_server,
+                default_vite_assets=self.routelit.default_client_assets(),
+                vite_assets=self.routelit.client_assets(),
             )
+        )
         response.set_cookie(
             COOKIE_SESSION_KEY, request.get_session_id(), **self.cookie_config
         )

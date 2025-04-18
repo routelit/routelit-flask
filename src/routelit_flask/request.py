@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 import uuid
 
 from flask import Request
@@ -12,6 +12,9 @@ class FlaskRLRequest(RouteLitRequest):
         self.request = request
         self.__default_session_id = str(uuid.uuid4())
         self.__ui_event = self._get_ui_event()
+
+    def get_headers(self) -> Dict[str, str]:
+        return self.request.headers
 
     @property
     def method(self) -> str:
