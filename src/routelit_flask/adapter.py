@@ -13,11 +13,10 @@ import importlib.resources as resources
 
 from jinja2 import ChoiceLoader, FileSystemLoader
 
-from routelit import RouteLit, ViewFn, AssetTarget
+from routelit import RouteLit, ViewFn, AssetTarget, COOKIE_SESSION_KEY
 from .utils import (
     get_default_template_path,
     get_default_static_path,
-    COOKIE_SESSION_KEY
 )
 from .request import FlaskRLRequest
 from .json_encoder import CustomJSONProvider
