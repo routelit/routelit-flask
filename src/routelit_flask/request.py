@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 import uuid
 
 from flask import Request
-from routelit import RouteLitRequest, RouteLitEvent
+from routelit import RouteLitRequest
 
 from .utils import COOKIE_SESSION_KEY
 
@@ -31,12 +31,6 @@ class FlaskRLRequest(RouteLitRequest):
         
     def is_json(self) -> bool:
         return self.request.is_json
-
-    def get_ui_event(self) -> Optional[RouteLitEvent]:
-        return self.__ui_event
-    
-    def clear_event(self):
-        self.__ui_event = None
         
     def get_query_param(self, key: str) -> Optional[str]:
         return self.request.args.get(key)
