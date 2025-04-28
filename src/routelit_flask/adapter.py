@@ -69,7 +69,7 @@ class RouteLitFlaskAdapter:
         assets_path = Path(self.static_path) / "assets"
         flask_app.add_url_rule(
             "/routelit/assets/<path:filename>",
-            endpoint="assets_static",
+            endpoint="routelit_assets_static",
             view_func=lambda filename: send_from_directory(str(assets_path), filename),
         )
 
