@@ -938,16 +938,16 @@ wheels = [
 
 [[package]]
 name = "routelit"
-version = "0.1.2"
+version = "0.2.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/07/46/bdf4ec0c560e5c4582351cc24e8f53a2d57e9d6d1e82f14d24e7d0921b57/routelit-0.1.2.tar.gz", hash = "sha256:4cb2e781ed8a8ab1de1821edd4d3fba5ba9e9fdbd7243cd8120ad581423e5d76", size = 12742946, upload-time = "2025-06-06T18:46:53.676Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/07/dd/af0816db0db94d2dab3edf184d0d8df3f31de4b3294096cacbaa5f8c0e00/routelit-0.2.2.tar.gz", hash = "sha256:b468fbef4ebc4f79fc199526322a25d189e93f0151d26b107f58e089e07451d5", size = 12757231, upload-time = "2025-06-18T05:09:40.047Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8f/a3/5839968fc01ae878e11b085de344c3e41f595b2683c0bd75cfa4b89d23b6/routelit-0.1.2-py3-none-any.whl", hash = "sha256:10c1782d31e30364c136432a57cd90a4ecfde5d64ac83ca12d2d6958588b0bbc", size = 184610, upload-time = "2025-06-06T18:46:51.503Z" },
+    { url = "https://files.pythonhosted.org/packages/4b/35/b498aa6e8d9cf42e223b6215019154fcd7c72fc21179b4553407d1ab1808/routelit-0.2.2-py3-none-any.whl", hash = "sha256:a05690610d03c34fc5ae07a356723d2e31d70c3ba65b56874e2b8aeb97b3d8c4", size = 185935, upload-time = "2025-06-18T05:09:37.748Z" },
 ]
 
 [[package]]
 name = "routelit-flask"
-version = "0.0.1"
+version = "0.0.2"
 source = { editable = "." }
 dependencies = [
     { name = "flask" },
@@ -973,7 +973,7 @@ dev = [
 requires-dist = [
     { name = "flask", specifier = ">=2.0.0" },
     { name = "jinja2", specifier = ">=3.0.0" },
-    { name = "routelit", specifier = ">=0.1.2" },
+    { name = "routelit", specifier = ">=0.2.2" },
 ]
 
 [package.metadata.requires-dev]
@@ -1208,9 +1208,9 @@ wheels = [
 
 [[package]]
 name = "zipp"
-version = "3.22.0"
+version = "3.23.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/12/b6/7b3d16792fdf94f146bed92be90b4eb4563569eca91513c8609aebf0c167/zipp-3.22.0.tar.gz", hash = "sha256:dd2f28c3ce4bc67507bfd3781d21b7bb2be31103b51a4553ad7d90b84e57ace5", size = 25257, upload-time = "2025-05-26T14:46:32.217Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e3/02/0f2892c661036d50ede074e376733dca2ae7c6eb617489437771209d4180/zipp-3.23.0.tar.gz", hash = "sha256:a07157588a12518c9d4034df3fbbee09c814741a33ff63c05fa29d26a2404166", size = 25547, upload-time = "2025-06-08T17:06:39.4Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ad/da/f64669af4cae46f17b90798a827519ce3737d31dbafad65d391e49643dc4/zipp-3.22.0-py3-none-any.whl", hash = "sha256:fe208f65f2aca48b81f9e6fd8cf7b8b32c26375266b009b413d45306b6148343", size = 9796, upload-time = "2025-05-26T14:46:30.775Z" },
+    { url = "https://files.pythonhosted.org/packages/2e/54/647ade08bf0db230bfea292f893923872fd20be6ac6f53b2b936ba839d75/zipp-3.23.0-py3-none-any.whl", hash = "sha256:071652d6115ed432f5ce1d34c336c0adfd6a884660d1e9712a256d3d3bd4b14e", size = 10276, upload-time = "2025-06-08T17:06:38.034Z" },
 ]
