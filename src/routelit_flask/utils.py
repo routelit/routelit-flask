@@ -9,4 +9,3 @@ def get_default_static_path() -> str:
 def get_default_template_path() -> str:
     template_path = resources.files("routelit").joinpath("templates")
     return str(template_path)
-
