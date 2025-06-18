@@ -10,5 +10,3 @@ def get_default_template_path() -> str:
     template_path = resources.files("routelit").joinpath("templates")
     return str(template_path)
 
-
-COOKIE_SESSION_KEY = "ROUTELIT_SESSION_ID"

@@ -1,21 +1,23 @@
-from typing import Any, Dict, List, Optional
 import uuid
+from typing import Any, Optional
 
 from flask import Request
-from routelit import RouteLitRequest
-
-from .utils import COOKIE_SESSION_KEY
+from routelit import COOKIE_SESSION_KEY, RouteLitRequest  # type: ignore[import-untyped]
 
 
 class FlaskRLRequest(RouteLitRequest):
+    """
+    Implements the RouteLitRequest interface for Flask.
+    """
+
     def __init__(self, request: Request):
         self.request = request
         super().__init__()
         self.__default_session_id = str(uuid.uuid4())
 
-    def get_headers(self) -> Dict[str, str]:
-        return self.request.headers
-    
+    def get_headers(self) -> dict[str, str]:
+        return self.request.headers  # type: ignore[return-value]
+
     def get_referrer(self) -> Optional[str]:
         return self.request.referrer or self.request.headers.get("Referer")
 
@@ -28,14 +30,14 @@ class FlaskRLRequest(RouteLitRequest):
             return self.request.json
         else:
             return None
-        
+
     def is_json(self) -> bool:
         return self.request.is_json
-        
+
     def get_query_param(self, key: str) -> Optional[str]:
         return self.request.args.get(key)
 
-    def get_query_param_list(self, key: str) -> List[str]:
+    def get_query_param_list(self, key: str) -> list[str]:
         return self.request.args.getlist(key)
 
     def get_session_id(self) -> str:
