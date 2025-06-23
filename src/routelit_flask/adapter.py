@@ -135,7 +135,7 @@ class RouteLitFlaskAdapter:
                 vite_assets=self.routelit.client_assets(),
             )
         )
-        response.set_cookie(COOKIE_SESSION_KEY, request.get_session_id(), **self.cookie_config)  # type: ignore[arg-type]
+        response.set_cookie(COOKIE_SESSION_KEY, request.get_session_id(), **self.cookie_config)
         return response
 
     def response(
