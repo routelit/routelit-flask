@@ -1,7 +1,7 @@
 [project]
 name = "routelit-flask"
 version = "0.1.0"
-description = "This is a template repository for Python projects that use uv for their dependency management."
+description = "A Flask adapter for the RouteLit framework, enabling seamless integration of RouteLit's reactive UI components with Flask web applications"
 authors = [{ name = "Rolando Gómez Tabar", email = "rolangom@gmail.com" }]
 license = { text = "Apache-2.0" }
 readme = "README.md"
