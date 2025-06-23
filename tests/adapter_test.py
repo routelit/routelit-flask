@@ -34,9 +34,9 @@ class TestRouteLitFlaskAdapter:
         adapter = RouteLitFlaskAdapter(mock_routelit)
 
         assert adapter.routelit == mock_routelit
-        assert adapter.debug is False
-        assert adapter.local_frontend_server == "http://localhost:5173"
-        assert adapter.local_elements_server == "http://localhost:5174"
+        assert adapter.run_mode == "prod"
+        assert adapter.local_frontend_server is None
+        assert adapter.local_components_server is None
         assert adapter.cookie_config == {
             "secure": True,
             "samesite": "none",
@@ -51,13 +51,13 @@ class TestRouteLitFlaskAdapter:
             static_path="/custom/static",
             template_path="/custom/templates",
             local_frontend_server="http://localhost:3000",
-            local_elements_server="http://localhost:3001",
+            local_components_server="http://localhost:3001",
         )
 
         assert adapter.static_path == "/custom/static"
         assert adapter.template_path == "/custom/templates"
         assert adapter.local_frontend_server == "http://localhost:3000"
-        assert adapter.local_elements_server == "http://localhost:3001"
+        assert adapter.local_components_server == "http://localhost:3001"
 
     @patch("routelit_flask.adapter.send_from_directory")
     def test_configure_static_assets(self, mock_send_from_directory, flask_app):
@@ -174,9 +174,9 @@ class TestRouteLitFlaskAdapter:
             ROUTELIT_DATA="json_elements",
             PAGE_TITLE="Test Title",
             PAGE_DESCRIPTION="Test Description",
-            DEBUG=False,
-            LOCAL_FRONTEND_SERVER="http://localhost:5173",
-            LOCAL_ELEMENTS_SERVER="http://localhost:5174",
+            RUN_MODE="prod",
+            LOCAL_FRONTEND_SERVER=None,
+            LOCAL_COMPONENTS_SERVER=None,
             default_vite_assets="default_assets",
             vite_assets="client_assets",
         )

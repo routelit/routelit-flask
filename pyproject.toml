@@ -20,7 +20,7 @@ classifiers = [
 ]
 dependencies = [
     "flask>=2.0.0",
-    "routelit>=0.2.2",
+    "routelit>=0.2.3",
     "jinja2>=3.0.0",
 ]
 
