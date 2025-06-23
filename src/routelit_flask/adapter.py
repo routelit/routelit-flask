@@ -1,6 +1,6 @@
 import importlib.resources as resources
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from flask import (
     Flask,
@@ -28,6 +28,15 @@ production_cookie_config = {
     "max_age": 60 * 60 * 24 * 1,  # 1 day
 }
 
+RunMode = Literal["prod", "dev_client", "dev_components"]
+"""
+The run mode for the RouteLitFlaskAdapter.
+
+- `prod`: Production mode.
+- `dev_client`: Development mode for the client.
+- `dev_components`: Development mode for the components.
+"""
+
 
 class RouteLitFlaskAdapter:
     """
@@ -38,20 +47,35 @@ class RouteLitFlaskAdapter:
         self,
         routelit: RouteLit,
         *,
-        static_path: str = get_default_static_path(),
+        static_path: Optional[str] = None,
         template_path: str = get_default_template_path(),
-        is_dev: bool = False,
-        is_dev_frontend: bool = False,
-        local_frontend_server: str = "http://localhost:5173",
-        local_elements_server: str = "http://localhost:5174",
+        run_mode: RunMode = "prod",
+        local_frontend_server: Optional[str] = None,
+        local_components_server: Optional[str] = None,
+        cookie_config: Optional[dict[str, Any]] = None,
     ):
+        """
+        Initialize the RouteLitFlaskAdapter.
+        - When run_mode="prod", no need to specify local_frontend_server and local_components_server.
+        - When run_mode="dev_client", you need to specify local_frontend_server.
+        - When run_mode="dev_components", you need to specify local_components_server.
+
+        Args:
+            routelit (RouteLit): The RouteLit instance.
+            static_path (Optional[str]): The path to the static js/css assets are.
+            template_path (str): The path to the index.html template file. Default is in routelit package, so no need to specify.
+            run_mode (RunMode): The run mode. Example: "prod", "dev_client", "dev_components".
+            local_frontend_server (Optional[str]): The local vite frontend server. Example: "http://localhost:5173".
+            local_components_server (Optional[str]): The local vite components server. Example: "http://localhost:5174".
+            cookie_config (Optional[dict[str, Any]]): The cookie configuration. Default is production cookie config.
+        """
         self.routelit = routelit
-        self.static_path = static_path
+        self.static_path = static_path or get_default_static_path()
         self.template_path = template_path
-        self.debug = is_dev_frontend
+        self.run_mode = run_mode
         self.local_frontend_server = local_frontend_server
-        self.cookie_config = production_cookie_config if not is_dev else {}
-        self.local_elements_server = local_elements_server
+        self.local_components_server = local_components_server
+        self.cookie_config = cookie_config or production_cookie_config if run_mode == "prod" else {}
 
     @classmethod
     def configure_static_assets(cls, flask_app: Flask, asset_target: AssetTarget) -> None:
@@ -104,9 +128,9 @@ class RouteLitFlaskAdapter:
                 ROUTELIT_DATA=response.get_str_json_elements(),
                 PAGE_TITLE=response.head.title,
                 PAGE_DESCRIPTION=response.head.description,
-                DEBUG=self.debug,
+                RUN_MODE=self.run_mode,
                 LOCAL_FRONTEND_SERVER=self.local_frontend_server,
-                LOCAL_ELEMENTS_SERVER=self.local_elements_server,
+                LOCAL_COMPONENTS_SERVER=self.local_components_server,
                 default_vite_assets=self.routelit.default_client_assets(),
                 vite_assets=self.routelit.client_assets(),
             )
