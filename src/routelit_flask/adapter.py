@@ -120,14 +120,14 @@ class RouteLitFlaskAdapter:
             flask_app.jinja_loader = ChoiceLoader([current_loader, FileSystemLoader(self.template_path)])  # type: ignore[list-item]
         return self
 
-    def _handle_get_request(self, view_fn: ViewFn, request: FlaskRLRequest, *args: Any, **kwargs: Any) -> Response:
-        response = self.routelit.handle_get_request(view_fn, request, *args, **kwargs)
+    def _handle_get_request(self, request: FlaskRLRequest, **kwargs: Any) -> Response:
+        rl_response = self.routelit.handle_get_request(request, **kwargs)
         response = make_response(
             render_template(
                 "index.html",
-                ROUTELIT_DATA=response.get_str_json_elements(),
-                PAGE_TITLE=response.head.title,
-                PAGE_DESCRIPTION=response.head.description,
+                ROUTELIT_DATA=rl_response.get_str_json_elements(),
+                PAGE_TITLE=rl_response.head.title,
+                PAGE_DESCRIPTION=rl_response.head.description,
                 RUN_MODE=self.run_mode,
                 LOCAL_FRONTEND_SERVER=self.local_frontend_server,
                 LOCAL_COMPONENTS_SERVER=self.local_components_server,
@@ -162,4 +162,4 @@ class RouteLitFlaskAdapter:
             actions = self.routelit.handle_post_request(view_fn, req, should_inject_builder, *args, **kwargs)
             return jsonify(actions)
         else:
-            return self._handle_get_request(view_fn, req, should_inject_builder, *args, **kwargs)
+            return self._handle_get_request(req, **kwargs)

@@ -1,4 +1,5 @@
 import uuid
+from collections.abc import Mapping
 from typing import Any, Optional
 
 from flask import Request
@@ -17,6 +18,9 @@ class FlaskRLRequest(RouteLitRequest):
 
     def get_headers(self) -> dict[str, str]:
         return self.request.headers  # type: ignore[return-value]
+
+    def get_path_params(self) -> Optional[Mapping[str, Any]]:
+        return self.request.view_args
 
     def get_referrer(self) -> Optional[str]:
         return self.request.referrer or self.request.headers.get("Referer")

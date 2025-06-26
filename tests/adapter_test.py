@@ -44,6 +44,16 @@ class TestRouteLitFlaskAdapter:
             "max_age": 60 * 60 * 24 * 1,  # 1 day
         }
 
+    def test_init_default_values_dev_mode(self, mock_routelit):
+        """Test adapter initialization with default values in dev mode."""
+        adapter = RouteLitFlaskAdapter(mock_routelit, run_mode="dev_client")
+
+        assert adapter.routelit == mock_routelit
+        assert adapter.run_mode == "dev_client"
+        assert adapter.local_frontend_server is None
+        assert adapter.local_components_server is None
+        assert adapter.cookie_config == {}  # Empty dict in dev mode
+
     def test_init_custom_values(self, mock_routelit):
         """Test adapter initialization with custom values."""
         adapter = RouteLitFlaskAdapter(
@@ -147,8 +157,7 @@ class TestRouteLitFlaskAdapter:
         """Test GET request handling."""
         adapter = RouteLitFlaskAdapter(mock_routelit)
 
-        # Mock view function and request
-        view_fn = Mock()
+        # Mock request
         mock_request = Mock(spec=FlaskRLRequest)
         mock_request.get_session_id.return_value = "test_session_id"
 
@@ -163,10 +172,10 @@ class TestRouteLitFlaskAdapter:
         mock_flask_response = Mock()
         mock_make_response.return_value = mock_flask_response
 
-        result = adapter._handle_get_request(view_fn, mock_request, "arg1", kwarg1="value1")
+        result = adapter._handle_get_request(mock_request, kwarg1="value1")
 
         # Verify RouteLit was called correctly
-        mock_routelit.handle_get_request.assert_called_once_with(view_fn, mock_request, "arg1", kwarg1="value1")
+        mock_routelit.handle_get_request.assert_called_once_with(mock_request, kwarg1="value1")
 
         # Verify template rendering
         mock_render_template.assert_called_once_with(
@@ -247,7 +256,7 @@ class TestRouteLitFlaskAdapter:
             result = adapter.response(view_fn, None, "arg1", kwarg1="value1")
 
             # Verify GET handler was called
-            mock_handle_get.assert_called_once_with(view_fn, mock_request_instance, None, "arg1", kwarg1="value1")
+            mock_handle_get.assert_called_once_with(mock_request_instance, kwarg1="value1")
 
             assert result == "get_response"
 

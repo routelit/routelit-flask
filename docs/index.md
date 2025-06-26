@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/github/license/routelit/routelit-flask)](https://img.shields.io/github/license/routelit/routelit-flask)
 
 
-![Routelit](https://wsrv.nl/?url=res.cloudinary.com/routelit/image/upload/v1747976918/routelit/routelit_c2otsv.png&w=300&h=300)
+![Routelit](https://wsrv.nl/?url=res.cloudinary.com/rolangom/image/upload/v1747976918/routelit/routelit_c2otsv.png&w=300&h=300)
 
 A Flask adapter for the RouteLit framework, enabling seamless integration of RouteLit's reactive UI components with Flask web applications.
 
