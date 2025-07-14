@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 from flask import Flask
 from jinja2 import ChoiceLoader
-from routelit import AssetTarget, RouteLit
+from routelit import AssetTarget, RouteLit  # type: ignore[import-untyped]
 
 from routelit_flask.adapter import RouteLitFlaskAdapter, RunModeEnum
 from routelit_flask.json_encoder import CustomJSONProvider
