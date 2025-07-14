@@ -1,4 +1,5 @@
 import importlib.resources as resources
+from enum import Enum
 from pathlib import Path
 from typing import Any, Literal, Optional
 
@@ -10,6 +11,7 @@ from flask import (
     render_template,
     request,
     send_from_directory,
+    stream_with_context,
 )
 from jinja2 import ChoiceLoader, FileSystemLoader
 from routelit import COOKIE_SESSION_KEY, AssetTarget, RouteLit, ViewFn  # type: ignore[import-untyped]
@@ -36,6 +38,12 @@ The run mode for the RouteLitFlaskAdapter.
 - `dev_client`: Development mode for the client.
 - `dev_components`: Development mode for the components.
 """
+
+
+class RunModeEnum(Enum):
+    PROD = "prod"
+    DEV_CLIENT = "dev_client"
+    DEV_COMPONENTS = "dev_components"
 
 
 class RouteLitFlaskAdapter:
@@ -120,8 +128,8 @@ class RouteLitFlaskAdapter:
             flask_app.jinja_loader = ChoiceLoader([current_loader, FileSystemLoader(self.template_path)])  # type: ignore[list-item]
         return self
 
-    def _handle_get_request(self, request: FlaskRLRequest, **kwargs: Any) -> Response:
-        rl_response = self.routelit.handle_get_request(request, **kwargs)
+    def _handle_get_request(self, view_fn: ViewFn, request: FlaskRLRequest, **kwargs: Any) -> Response:
+        rl_response = self.routelit.handle_get_request(view_fn, request, **kwargs)
         response = make_response(
             render_template(
                 "index.html",
@@ -162,4 +170,24 @@ class RouteLitFlaskAdapter:
             actions = self.routelit.handle_post_request(view_fn, req, should_inject_builder, *args, **kwargs)
             return jsonify(actions)
         else:
-            return self._handle_get_request(req, **kwargs)
+            return self._handle_get_request(view_fn, req, **kwargs)
+
+    def stream_response(
+        self,
+        view_fn: ViewFn,
+        should_inject_builder: Optional[bool] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        req = FlaskRLRequest(request)
+        if req.method == "POST":
+            resp = Response(
+                stream_with_context(
+                    self.routelit.handle_post_request_stream_jsonl(view_fn, req, should_inject_builder, *args, **kwargs)
+                ),
+                mimetype="text/event-stream",
+            )
+            resp.headers["Content-Type"] = "application/jsonlines"
+            return resp
+        else:
+            return self._handle_get_request(view_fn, req, **kwargs)
