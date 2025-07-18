@@ -160,8 +160,8 @@ class RouteLitFlaskAdapter:
         Handle a request and return a response.
 
         Args:
-            view_fn: The view function to handle the request.
-            should_inject_builder: Whether to inject the builder into the request.
+            view_fn (ViewFn): The view function to handle the request.
+            inject_builder (Optional[bool]): Whether to inject the builder into the request.
             *args: Additional arguments to pass to the view function.
             **kwargs: Additional keyword arguments to pass to the view function.
 
@@ -182,6 +182,18 @@ class RouteLitFlaskAdapter:
         *args: Any,
         **kwargs: Any,
     ) -> Response:
+        """
+        Handle a request and return a response.
+
+        Args:
+            view_fn (ViewFn): The view function to handle the request.
+            inject_builder (Optional[bool]): Whether to inject the builder into the request.
+            *args: Additional arguments to pass to the view function.
+            **kwargs: Additional keyword arguments to pass to the view function.
+
+        Returns:
+            A Flask response.
+        """
         req = FlaskRLRequest(request)
         if req.method == "POST":
             resp = Response(
