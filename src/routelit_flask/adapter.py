@@ -1,7 +1,6 @@
 import importlib.resources as resources
 from enum import Enum
-from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, Union
 
 from flask import (
     Flask,
@@ -13,6 +12,7 @@ from flask import (
     send_from_directory,
     stream_with_context,
 )
+from flask.json.provider import JSONProvider
 from jinja2 import ChoiceLoader, FileSystemLoader
 from routelit import COOKIE_SESSION_KEY, AssetTarget, RouteLit, ViewFn  # type: ignore[import-untyped]
 
@@ -95,27 +95,30 @@ class RouteLitFlaskAdapter:
             view_func=lambda filename: send_from_directory(str(assets_path), filename),
         )
 
-    def configure(self, flask_app: Flask) -> "RouteLitFlaskAdapter":
+    def configure(
+        self, flask_app: Flask, json_provider_class: Optional[Union[type[JSONProvider], Literal[False]]] = None
+    ) -> "RouteLitFlaskAdapter":
         """
         Configure the Flask application to use the RouteLitFlaskAdapter.
 
         Args:
             flask_app: The Flask application to configure.
+            json_provider_class: The JSON provider class to use. If None, use CustomJSONProvider. If False, do not set a custom JSON provider.
 
         Returns:
             The RouteLitFlaskAdapter instance.
         """
         # Set custom JSON encoder
-        flask_app.json_provider_class = CustomJSONProvider
+        if json_provider_class is not False:
+            flask_app.json_provider_class = json_provider_class or CustomJSONProvider
 
         for static_path in self.routelit.get_builder_class().get_client_resource_paths():
             self.configure_static_assets(flask_app, static_path)
 
-        assets_path = Path(self.static_path) / "assets"
         flask_app.add_url_rule(
-            "/routelit/assets/<path:filename>",
-            endpoint="routelit_assets_static",
-            view_func=lambda filename: send_from_directory(str(assets_path), filename),
+            "/routelit/<path:filename>",
+            endpoint="routelit_static",
+            view_func=lambda filename: send_from_directory(self.static_path, filename),
         )
 
         # configure jinja templates for index.html
@@ -149,7 +152,7 @@ class RouteLitFlaskAdapter:
     def response(
         self,
         view_fn: ViewFn,
-        should_inject_builder: Optional[bool] = None,
+        inject_builder: Optional[bool] = None,
         *args: Any,
         **kwargs: Any,
     ) -> Response:
@@ -167,7 +170,7 @@ class RouteLitFlaskAdapter:
         """
         req = FlaskRLRequest(request)
         if req.method == "POST":
-            actions = self.routelit.handle_post_request(view_fn, req, should_inject_builder, *args, **kwargs)
+            actions = self.routelit.handle_post_request(view_fn, req, inject_builder, *args, **kwargs)
             return jsonify(actions)
         else:
             return self._handle_get_request(view_fn, req, **kwargs)
@@ -175,7 +178,7 @@ class RouteLitFlaskAdapter:
     def stream_response(
         self,
         view_fn: ViewFn,
-        should_inject_builder: Optional[bool] = None,
+        inject_builder: Optional[bool] = None,
         *args: Any,
         **kwargs: Any,
     ) -> Response:
@@ -183,7 +186,7 @@ class RouteLitFlaskAdapter:
         if req.method == "POST":
             resp = Response(
                 stream_with_context(
-                    self.routelit.handle_post_request_stream_jsonl(view_fn, req, should_inject_builder, *args, **kwargs)
+                    self.routelit.handle_post_request_stream_jsonl(view_fn, req, inject_builder, *args, **kwargs)
                 ),
                 mimetype="text/event-stream",
             )

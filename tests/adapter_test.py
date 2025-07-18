@@ -2,6 +2,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from flask import Flask
+from flask.json.provider import JSONProvider
 from jinja2 import ChoiceLoader
 from routelit import AssetTarget, RouteLit  # type: ignore[import-untyped]
 
@@ -121,11 +122,8 @@ class TestRouteLitFlaskAdapter:
 
         with (
             patch("routelit_flask.adapter.send_from_directory"),
-            patch("routelit_flask.adapter.Path") as mock_path,
             patch("routelit_flask.adapter.FileSystemLoader"),
         ):
-            mock_path.return_value.__truediv__.return_value = "/mock/assets/path"
-
             result = adapter.configure(flask_app)
 
             # Check that the adapter is returned
@@ -135,7 +133,7 @@ class TestRouteLitFlaskAdapter:
             assert flask_app.json_provider_class == CustomJSONProvider
 
             # Check that assets URL rule was added
-            assert any(rule.rule == "/routelit/assets/<path:filename>" for rule in flask_app.url_map.iter_rules())
+            assert any(rule.rule == "/routelit/<path:filename>" for rule in flask_app.url_map.iter_rules())
 
     def test_configure_jinja_loader_with_choice_loader(self, mock_routelit, flask_app):
         """Test Jinja loader configuration when ChoiceLoader already exists."""
@@ -148,7 +146,6 @@ class TestRouteLitFlaskAdapter:
 
         with (
             patch("routelit_flask.adapter.send_from_directory"),
-            patch("routelit_flask.adapter.Path"),
             patch("routelit_flask.adapter.FileSystemLoader") as mock_fs_loader,
         ):
             mock_fs_instance = Mock()
@@ -169,7 +166,6 @@ class TestRouteLitFlaskAdapter:
 
         with (
             patch("routelit_flask.adapter.send_from_directory"),
-            patch("routelit_flask.adapter.Path"),
             patch("routelit_flask.adapter.FileSystemLoader") as mock_fs_loader,
             patch("routelit_flask.adapter.ChoiceLoader", ChoiceLoader),
         ):
@@ -451,7 +447,6 @@ class TestRouteLitFlaskAdapter:
 
         with (
             patch("routelit_flask.adapter.send_from_directory"),
-            patch("routelit_flask.adapter.Path"),
             patch("routelit_flask.adapter.FileSystemLoader"),
             patch("routelit_flask.adapter.resources.files") as mock_files,
         ):
@@ -463,7 +458,81 @@ class TestRouteLitFlaskAdapter:
             rules = [rule.rule for rule in flask_app.url_map.iter_rules()]
             assert "/routelit/package1/<path:filename>" in rules
             assert "/routelit/package2/<path:filename>" in rules
-            assert "/routelit/assets/<path:filename>" in rules
+            assert "/routelit/<path:filename>" in rules
+
+    def test_configure_with_custom_json_provider(self, mock_routelit, flask_app):
+        """Test Flask app configuration with custom JSON provider."""
+        adapter = RouteLitFlaskAdapter(mock_routelit)
+        custom_provider = type("CustomProvider", (JSONProvider,), {})
+
+        with (
+            patch("routelit_flask.adapter.send_from_directory"),
+            patch("routelit_flask.adapter.FileSystemLoader"),
+        ):
+            result = adapter.configure(flask_app, json_provider_class=custom_provider)
+
+            # Check that the adapter is returned
+            assert result == adapter
+
+            # Check that custom JSON provider was set
+            assert flask_app.json_provider_class == custom_provider
+
+    def test_configure_without_json_provider(self, mock_routelit, flask_app):
+        """Test Flask app configuration with json_provider_class=False."""
+        adapter = RouteLitFlaskAdapter(mock_routelit)
+        original_provider = flask_app.json_provider_class
+
+        with (
+            patch("routelit_flask.adapter.send_from_directory"),
+            patch("routelit_flask.adapter.FileSystemLoader"),
+        ):
+            result = adapter.configure(flask_app, json_provider_class=False)
+
+            # Check that the adapter is returned
+            assert result == adapter
+
+            # Check that JSON provider was not changed
+            assert flask_app.json_provider_class == original_provider
+
+    def test_response_with_inject_builder(self, mock_routelit, flask_app):
+        """Test response method with inject_builder parameter."""
+        adapter = RouteLitFlaskAdapter(mock_routelit)
+        view_fn = Mock()
+        mock_actions = ["action1", "action2"]
+        mock_routelit.handle_post_request.return_value = mock_actions
+
+        # Create a test route
+        @flask_app.route("/test", methods=["POST"])
+        def test_route():
+            return adapter.response(view_fn, inject_builder=True)
+
+        # Make a test request
+        with flask_app.test_client() as client:
+            client.post("/test")
+
+            # Verify inject_builder was passed correctly
+            mock_routelit.handle_post_request.assert_called_once()
+            assert mock_routelit.handle_post_request.call_args[0][2] is True
+
+    def test_stream_response_with_inject_builder(self, mock_routelit, flask_app):
+        """Test stream_response method with inject_builder parameter."""
+        adapter = RouteLitFlaskAdapter(mock_routelit)
+        view_fn = Mock()
+        mock_stream = iter(["action1", "action2"])
+        mock_routelit.handle_post_request_stream_jsonl.return_value = mock_stream
+
+        # Create a test route
+        @flask_app.route("/test", methods=["POST"])
+        def test_route():
+            return adapter.stream_response(view_fn, inject_builder=True)
+
+        # Make a test request
+        with flask_app.test_client() as client:
+            client.post("/test")
+
+            # Verify inject_builder was passed correctly
+            mock_routelit.handle_post_request_stream_jsonl.assert_called_once()
+            assert mock_routelit.handle_post_request_stream_jsonl.call_args[0][2] is True
 
 
 class TestFlaskRLRequest:
