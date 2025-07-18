@@ -1,10 +1,10 @@
 # RouteLit Flask Adapter
 
-[![Release](https://img.shields.io/github/v/release/rolangom/routelit-flask)](https://img.shields.io/github/v/release/rolangom/routelit-flask)
-[![Build status](https://img.shields.io/github/actions/workflow/status/rolangom/routelit-flask/main.yml?branch=main)](https://github.com/rolangom/routelit-flask/actions/workflows/main.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/rolangom/routelit-flask/branch/main/graph/badge.svg)](https://codecov.io/gh/rolangom/routelit-flask)
-[![Commit activity](https://img.shields.io/github/commit-activity/m/rolangom/routelit-flask)](https://img.shields.io/github/commit-activity/m/rolangom/routelit-flask)
-[![License](https://img.shields.io/github/license/rolangom/routelit-flask)](https://img.shields.io/github/license/rolangom/routelit-flask)
+[![Release](https://img.shields.io/github/v/release/routelit/routelit-flask)](https://img.shields.io/github/v/release/routelit/routelit-flask)
+[![Build status](https://img.shields.io/github/actions/workflow/status/routelit/routelit-flask/main.yml?branch=main)](https://github.com/routelit/routelit-flask/actions/workflows/main.yml?query=branch%3Amain)
+[![codecov](https://codecov.io/gh/routelit/routelit-flask/branch/main/graph/badge.svg)](https://codecov.io/gh/routelit/routelit-flask)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/routelit/routelit-flask)](https://img.shields.io/github/commit-activity/m/routelit/routelit-flask)
+[![License](https://img.shields.io/github/license/routelit/routelit-flask)](https://img.shields.io/github/license/routelit/routelit-flask)
 
 
 ![Routelit](https://wsrv.nl/?url=res.cloudinary.com/rolangom/image/upload/v1747976918/routelit/routelit_c2otsv.png&w=300&h=300)
