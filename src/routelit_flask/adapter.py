@@ -14,7 +14,7 @@ from flask import (
 )
 from flask.json.provider import JSONProvider
 from jinja2 import ChoiceLoader, FileSystemLoader
-from routelit import COOKIE_SESSION_KEY, AssetTarget, RouteLit, ViewFn  # type: ignore[import-untyped]
+from routelit import COOKIE_SESSION_KEY, AssetTarget, RouteLit, ViewFn
 
 from .json_encoder import CustomJSONProvider
 from .request import FlaskRLRequest
@@ -143,7 +143,10 @@ class RouteLitFlaskAdapter:
                 LOCAL_FRONTEND_SERVER=self.local_frontend_server,
                 LOCAL_COMPONENTS_SERVER=self.local_components_server,
                 default_vite_assets=self.routelit.default_client_assets(),
+                importmap_json=self.routelit.get_importmap_json(),
                 vite_assets=self.routelit.client_assets(),
+                extra_head_content=self.routelit.get_extra_head_content(),
+                extra_body_content=self.routelit.get_extra_body_content(),
             )
         )
         response.set_cookie(COOKIE_SESSION_KEY, request.get_session_id(), **self.cookie_config)

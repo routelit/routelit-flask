@@ -1,6 +1,6 @@
 [project]
 name = "routelit-flask"
-version = "0.4.3"
+version = "0.5.0"
 description = "A Flask adapter for the RouteLit framework, enabling seamless integration of RouteLit's reactive UI components with Flask web applications"
 authors = [{ name = "Rolando Gómez Tabar", email = "rolangom@gmail.com" }]
 license = { text = "Apache-2.0" }
@@ -20,7 +20,7 @@ classifiers = [
 ]
 dependencies = [
     "flask>=2.0.0",
-    "routelit>=0.4.4",
+    "routelit>=0.5.8",
     "jinja2>=3.0.0",
 ]
 

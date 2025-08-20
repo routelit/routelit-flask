@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from typing import Any, Optional
 
 from flask import Request
-from routelit import COOKIE_SESSION_KEY, RouteLitRequest  # type: ignore[import-untyped]
+from routelit import COOKIE_SESSION_KEY, RouteLitRequest
 
 
 class FlaskRLRequest(RouteLitRequest):

@@ -197,6 +197,11 @@ class TestRouteLitFlaskAdapter:
         mock_response.head.description = "Test Description"
         mock_routelit.handle_get_request.return_value = mock_response
 
+        # Set return values for methods used in _handle_get_request
+        mock_routelit.get_importmap_json.return_value = "importmap_json"
+        mock_routelit.get_extra_head_content.return_value = "extra_head_content"
+        mock_routelit.get_extra_body_content.return_value = "extra_body_content"
+
         # Mock Flask response
         mock_flask_response = Mock()
         mock_make_response.return_value = mock_flask_response
@@ -220,7 +225,10 @@ class TestRouteLitFlaskAdapter:
             LOCAL_FRONTEND_SERVER=None,
             LOCAL_COMPONENTS_SERVER=None,
             default_vite_assets="default_assets",
+            importmap_json="importmap_json",
             vite_assets="client_assets",
+            extra_head_content="extra_head_content",
+            extra_body_content="extra_body_content",
         )
 
         # Verify cookie was set
@@ -404,6 +412,9 @@ class TestRouteLitFlaskAdapter:
         mock_response.head.title = "Test Title"
         mock_response.head.description = "Test Description"
         mock_routelit.handle_get_request.return_value = mock_response
+        mock_routelit.get_importmap_json.return_value = "importmap_json"
+        mock_routelit.get_extra_head_content.return_value = "extra_head_content"
+        mock_routelit.get_extra_body_content.return_value = "extra_body_content"
 
         with (
             patch("routelit_flask.adapter.render_template") as mock_render_template,
@@ -424,7 +435,10 @@ class TestRouteLitFlaskAdapter:
                 LOCAL_FRONTEND_SERVER="http://localhost:3000",
                 LOCAL_COMPONENTS_SERVER="http://localhost:3001",
                 default_vite_assets="default_assets",
+                importmap_json="importmap_json",
                 vite_assets="client_assets",
+                extra_head_content="extra_head_content",
+                extra_body_content="extra_body_content",
             )
 
             # Verify cookie was set with dev mode config (empty dict)
@@ -533,6 +547,166 @@ class TestRouteLitFlaskAdapter:
             # Verify inject_builder was passed correctly
             mock_routelit.handle_post_request_stream_jsonl.assert_called_once()
             assert mock_routelit.handle_post_request_stream_jsonl.call_args[0][2] is True
+
+    def test_init_dev_client_mode(self, mock_routelit):
+        """Test adapter initialization in dev_client mode."""
+        adapter = RouteLitFlaskAdapter(
+            mock_routelit, run_mode="dev_client", local_frontend_server="http://localhost:3000"
+        )
+        assert adapter.run_mode == "dev_client"
+        assert adapter.local_frontend_server == "http://localhost:3000"
+        assert adapter.local_components_server is None
+        assert adapter.cookie_config == {}
+
+    def test_handle_get_request_with_all_routelit_methods(self, mock_routelit):
+        """Test _handle_get_request calls all expected RouteLit methods."""
+        adapter = RouteLitFlaskAdapter(mock_routelit)
+        # Mock request
+        mock_request = Mock(spec=FlaskRLRequest)
+        mock_request.get_session_id.return_value = "test_session_id"
+        # Mock RouteLit response
+        mock_response = Mock()
+        mock_response.get_str_json_elements.return_value = "json_elements"
+        mock_response.head.title = "Test Title"
+        mock_response.head.description = "Test Description"
+        mock_routelit.handle_get_request.return_value = mock_response
+        with (
+            patch("routelit_flask.adapter.render_template", return_value="rendered_template"),
+            patch("routelit_flask.adapter.make_response") as mock_make_response,
+        ):
+            mock_flask_response = Mock()
+            mock_make_response.return_value = mock_flask_response
+            adapter._handle_get_request(Mock(), mock_request)
+            # Verify all RouteLit methods were called
+            mock_routelit.handle_get_request.assert_called_once()
+            mock_routelit.default_client_assets.assert_called_once()
+            mock_routelit.get_importmap_json.assert_called_once()
+            mock_routelit.client_assets.assert_called_once()
+            mock_routelit.get_extra_head_content.assert_called_once()
+            mock_routelit.get_extra_body_content.assert_called_once()
+
+    def test_response_with_args_and_kwargs(self, mock_routelit):
+        """Test response method passes *args and **kwargs correctly."""
+        adapter = RouteLitFlaskAdapter(mock_routelit)
+        view_fn = Mock()
+        # Create a mock Flask request
+        mock_flask_request = Mock()
+        with (
+            patch("routelit_flask.adapter.request", mock_flask_request),
+            patch("routelit_flask.adapter.FlaskRLRequest") as mock_flask_rl_request,
+            patch.object(adapter, "_handle_get_request") as mock_handle_get,
+        ):
+            mock_request_instance = Mock()
+            mock_request_instance.method = "GET"
+            mock_flask_rl_request.return_value = mock_request_instance
+            adapter.response(view_fn, None, "arg1", "arg2", kwarg1="value1", kwarg2="value2")
+            # Verify args and kwargs were passed correctly to _handle_get_request
+            mock_handle_get.assert_called_once()
+            call_args = mock_handle_get.call_args
+            assert call_args[1] == {"kwarg1": "value1", "kwarg2": "value2"}
+
+    def test_stream_response_with_args_and_kwargs(self, mock_routelit):
+        """Test stream_response method passes *args and **kwargs correctly."""
+        adapter = RouteLitFlaskAdapter(mock_routelit)
+        view_fn = Mock()
+        mock_stream_data = ["action1", "action2"]
+        mock_routelit.handle_post_request_stream_jsonl.return_value = mock_stream_data
+        # Create a mock Flask request
+        mock_flask_request = Mock()
+        with (
+            patch("routelit_flask.adapter.request", mock_flask_request),
+            patch("routelit_flask.adapter.FlaskRLRequest") as mock_flask_rl_request,
+            patch("routelit_flask.adapter.stream_with_context"),
+            patch("routelit_flask.adapter.Response"),
+        ):
+            mock_request_instance = Mock()
+            mock_request_instance.method = "POST"
+            mock_flask_rl_request.return_value = mock_request_instance
+            adapter.stream_response(view_fn, True, "arg1", "arg2", kwarg1="value1", kwarg2="value2")
+            # Verify args and kwargs were passed correctly
+            mock_routelit.handle_post_request_stream_jsonl.assert_called_once_with(
+                view_fn, mock_request_instance, True, "arg1", "arg2", kwarg1="value1", kwarg2="value2"
+            )
+
+    def test_handle_get_request_with_custom_cookie_config(self, mock_routelit):
+        """Test _handle_get_request with custom cookie configuration."""
+        custom_cookie_config = {
+            "secure": False,
+            "samesite": "lax",
+            "httponly": False,
+            "max_age": 3600,
+        }
+        adapter = RouteLitFlaskAdapter(mock_routelit, cookie_config=custom_cookie_config)
+        # Mock request
+        mock_request = Mock(spec=FlaskRLRequest)
+        mock_request.get_session_id.return_value = "test_session_id"
+        # Mock RouteLit response
+        mock_response = Mock()
+        mock_response.get_str_json_elements.return_value = "json_elements"
+        mock_response.head.title = "Test Title"
+        mock_response.head.description = "Test Description"
+        mock_routelit.handle_get_request.return_value = mock_response
+        with (
+            patch("routelit_flask.adapter.render_template", return_value="rendered_template"),
+            patch("routelit_flask.adapter.make_response") as mock_make_response,
+        ):
+            mock_flask_response = Mock()
+            mock_make_response.return_value = mock_flask_response
+            adapter._handle_get_request(Mock(), mock_request)
+            # Verify cookie was set with custom config
+            mock_flask_response.set_cookie.assert_called_once_with(
+                "ROUTELIT_SESSION_ID",
+                "test_session_id",
+                secure=False,
+                samesite="lax",
+                httponly=False,
+                max_age=3600,
+            )
+
+    def test_response_post_request_with_args_and_kwargs(self, mock_routelit):
+        """Test POST request handling with args and kwargs."""
+        adapter = RouteLitFlaskAdapter(mock_routelit)
+        view_fn = Mock()
+        mock_actions = ["action1", "action2"]
+        mock_routelit.handle_post_request.return_value = mock_actions
+        # Create a mock Flask request
+        mock_flask_request = Mock()
+        with (
+            patch("routelit_flask.adapter.request", mock_flask_request),
+            patch("routelit_flask.adapter.FlaskRLRequest") as mock_flask_rl_request,
+            patch("routelit_flask.adapter.jsonify", return_value="json_response"),
+        ):
+            mock_request_instance = Mock()
+            mock_request_instance.method = "POST"
+            mock_flask_rl_request.return_value = mock_request_instance
+            adapter.response(view_fn, None, "arg1", "arg2", kwarg1="value1", kwarg2="value2")
+            # Verify args and kwargs were passed correctly
+            mock_routelit.handle_post_request.assert_called_once_with(
+                view_fn, mock_request_instance, None, "arg1", "arg2", kwarg1="value1", kwarg2="value2"
+            )
+
+    def test_static_path_custom_value(self, mock_routelit):
+        """Test static_path can be set with custom value."""
+        custom_path = "/custom/static/path"
+        adapter = RouteLitFlaskAdapter(mock_routelit, static_path=custom_path)
+        assert adapter.static_path == custom_path
+
+    def test_template_path_custom_value(self, mock_routelit):
+        """Test template_path can be set with custom value."""
+        custom_path = "/custom/template/path"
+        adapter = RouteLitFlaskAdapter(mock_routelit, template_path=custom_path)
+        assert adapter.template_path == custom_path
+
+    def test_configure_static_assets_with_invalid_asset_target(self, flask_app):
+        """Test configure_static_assets with invalid asset target."""
+        # Asset target missing required keys
+        invalid_asset_target = {}
+        with (
+            pytest.raises(KeyError),
+            patch("routelit_flask.adapter.resources.files") as mock_files,
+        ):
+            mock_files.return_value.joinpath.return_value = "/mock/path"
+            RouteLitFlaskAdapter.configure_static_assets(flask_app, invalid_asset_target)
 
 
 class TestFlaskRLRequest:
