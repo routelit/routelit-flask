@@ -83,7 +83,7 @@ class RouteLitFlaskAdapter:
         self.run_mode = run_mode
         self.local_frontend_server = local_frontend_server
         self.local_components_server = local_components_server
-        self.cookie_config = cookie_config or production_cookie_config if run_mode == "prod" else {}
+        self.cookie_config = {**production_cookie_config, **(cookie_config or {})} if run_mode == "prod" else {}
 
     @classmethod
     def configure_static_assets(cls, flask_app: Flask, asset_target: AssetTarget) -> None:

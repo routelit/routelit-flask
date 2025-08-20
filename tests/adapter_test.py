@@ -80,8 +80,8 @@ class TestRouteLitFlaskAdapter:
         assert adapter.local_frontend_server == "http://localhost:3000"
         assert adapter.local_components_server == "http://localhost:3001"
 
-    def test_init_custom_cookie_config(self, mock_routelit):
-        """Test adapter initialization with custom cookie configuration."""
+    def test_init_custom_cookie_config_complete_override(self, mock_routelit):
+        """Test adapter initialization with custom cookie configuration that completely overrides defaults."""
         custom_cookie_config = {
             "secure": False,
             "samesite": "lax",
@@ -91,7 +91,42 @@ class TestRouteLitFlaskAdapter:
 
         adapter = RouteLitFlaskAdapter(mock_routelit, cookie_config=custom_cookie_config)
 
-        assert adapter.cookie_config == custom_cookie_config
+        # In production mode, custom config should completely override defaults
+        assert adapter.cookie_config == {
+            "secure": False,
+            "samesite": "lax",
+            "httponly": False,
+            "max_age": 3600,
+        }
+
+    def test_init_custom_cookie_config_partial_override(self, mock_routelit):
+        """Test adapter initialization with partial custom cookie configuration that merges with defaults."""
+        # Only override some of the default values
+        custom_cookie_config = {
+            "secure": False,
+            "max_age": 7200,  # 2 hours instead of 1 day
+        }
+
+        adapter = RouteLitFlaskAdapter(mock_routelit, cookie_config=custom_cookie_config)
+
+        # In production mode, custom config should merge with defaults
+        assert adapter.cookie_config == {
+            "secure": False,  # Overridden
+            "samesite": "none",  # Default preserved
+            "httponly": True,  # Default preserved
+            "max_age": 7200,  # Overridden
+        }
+
+    def test_init_cookie_config_none_prod_mode(self, mock_routelit):
+        """Test adapter initialization with None cookie_config in production mode."""
+        adapter = RouteLitFlaskAdapter(mock_routelit, cookie_config=None)
+        # In production mode with None cookie_config, should use default production config
+        assert adapter.cookie_config == {
+            "secure": True,
+            "samesite": "none",
+            "httponly": True,
+            "max_age": 60 * 60 * 24 * 1,  # 1 day
+        }
 
     def test_init_dev_components_mode(self, mock_routelit):
         """Test adapter initialization in dev_components mode."""
@@ -101,6 +136,18 @@ class TestRouteLitFlaskAdapter:
 
         assert adapter.run_mode == "dev_components"
         assert adapter.local_components_server == "http://localhost:3001"
+        assert adapter.cookie_config == {}
+
+    def test_init_dev_mode_with_cookie_config(self, mock_routelit):
+        """Test that cookie_config is ignored in dev mode."""
+        custom_cookie_config = {
+            "secure": False,
+            "samesite": "lax",
+            "httponly": False,
+            "max_age": 3600,
+        }
+        adapter = RouteLitFlaskAdapter(mock_routelit, run_mode="dev_client", cookie_config=custom_cookie_config)
+        # In dev mode, cookie_config should be empty regardless of provided config
         assert adapter.cookie_config == {}
 
     @patch("routelit_flask.adapter.send_from_directory")
