@@ -2,7 +2,7 @@ import json
 import uuid
 from collections.abc import Mapping
 from io import IOBase
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from flask import Request
 from routelit import COOKIE_SESSION_KEY, RouteLitRequest
@@ -41,7 +41,7 @@ class FlaskRLRequest(RouteLitRequest):
 
     def get_files(self) -> Optional[list[IOBase]]:
         if self.is_multipart():
-            return self.request.files.getlist("files")
+            return cast(list[IOBase], self.request.files.getlist("files"))
         return None
 
     def is_json(self) -> bool:
