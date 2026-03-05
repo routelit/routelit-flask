@@ -1,5 +1,7 @@
+import json
 import uuid
 from collections.abc import Mapping
+from io import IOBase
 from typing import Any, Optional
 
 from flask import Request
@@ -32,11 +34,22 @@ class FlaskRLRequest(RouteLitRequest):
     def get_json(self) -> Optional[Any]:
         if self.is_json():
             return self.request.json
-        else:
-            return None
+        if self.is_multipart():
+            json_str = self.request.form.get("json", "{}")
+            return json.loads(json_str)
+        return None
+
+    def get_files(self) -> Optional[list[IOBase]]:
+        if self.is_multipart():
+            return self.request.files.getlist("files")
+        return None
 
     def is_json(self) -> bool:
         return self.request.is_json
+
+    def is_multipart(self) -> bool:
+        content_type = self.request.content_type or ""
+        return content_type.startswith("multipart/form-data")
 
     def get_query_param(self, key: str) -> Optional[str]:
         return self.request.args.get(key)

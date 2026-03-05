@@ -844,6 +844,8 @@ class TestFlaskRLRequest:
     def test_get_json_when_not_json(self, mock_flask_request):
         """Test get_json method when request is not JSON."""
         mock_flask_request.is_json = False
+        mock_flask_request.content_type = "text/html"  # Non-JSON, non-multipart
+        mock_flask_request.form.get.return_value = "{}"  # Return valid JSON string
         rl_request = FlaskRLRequest(mock_flask_request)
 
         json_data = rl_request.get_json()
