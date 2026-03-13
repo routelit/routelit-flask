@@ -5,9 +5,8 @@ import uuid
 from io import BytesIO
 
 import pytest
-from flask import Flask, Request, request
+from flask import Flask, request
 
-from routelit import COOKIE_SESSION_KEY
 from routelit_flask.request import FlaskRLRequest
 
 
